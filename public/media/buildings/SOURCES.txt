@@ -1,0 +1,7 @@
+Background photos: Wikimedia Commons, CC0 (public domain, no attribution required). Resized to 1920px, converted to WebP.
+hero-frame-site.webp      https://commons.wikimedia.org/w/index.php?curid=123281733
+steel-frame-crane.webp    https://commons.wikimedia.org/w/index.php?curid=150464585
+completed-towers.webp     https://commons.wikimedia.org/w/index.php?curid=165920128
+scaffolded-building.webp  https://commons.wikimedia.org/w/index.php?curid=140332467
+crane-block.webp          https://commons.wikimedia.org/w/index.php?curid=50027955
+apartment-blocks.webp     https://commons.wikimedia.org/w/index.php?curid=142444889

@@ -1,0 +1,315 @@
+@import "tailwindcss";
+
+@theme {
+  --color-blue: #1747b8;
+  --color-blue-deep: #0d2b73;
+  --color-red: #e31b23;
+  --color-yellow: #f6c400;
+  --color-concrete: #ebe8e2;
+  --color-concrete-2: #dedad2;
+  --color-ink: #121418;
+  --color-ink-2: #1c1f26;
+  --color-line: rgb(18 20 24 / 0.14);
+
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---------- Base ---------- */
+html {
+  background: var(--color-concrete);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+/* Never allow sideways page scrolling. `clip` (unlike `hidden`) creates no scroll
+   container, so position: sticky and Lenis keep working. */
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+@supports not (overflow: clip) {
+  body {
+    overflow-x: hidden;
+  }
+}
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 100;
+}
+
+/* Scrollbar: concrete track, blue "steel beam" thumb that turns safety-yellow on hover */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-blue) var(--color-concrete-2);
+}
+::-webkit-scrollbar {
+  width: 12px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-concrete-2);
+  border-left: 1px solid var(--color-line);
+}
+::-webkit-scrollbar-thumb {
+  background:
+    repeating-linear-gradient(-45deg, rgb(255 255 255 / 0.14) 0 4px, transparent 4px 8px),
+    var(--color-blue);
+  border: 3px solid var(--color-concrete-2);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background:
+    repeating-linear-gradient(-45deg, var(--color-ink) 0 5px, transparent 5px 10px),
+    var(--color-yellow);
+}
+::-webkit-scrollbar-corner {
+  background: var(--color-concrete-2);
+}
+/* Inner horizontal scrollers (filters, tip carousel) stay discreet */
+.scroll-thin {
+  scrollbar-width: none;
+}
+.scroll-thin::-webkit-scrollbar {
+  display: none;
+}
+
+::selection {
+  background: var(--color-yellow);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Custom listboxes show focus on the highlighted option instead */
+[role="listbox"]:focus-visible {
+  outline: none;
+}
+
+.font-wide {
+  font-variation-settings: "wdth" 125;
+}
+.font-narrow {
+  font-variation-settings: "wdth" 75;
+}
+
+@layer components {
+/* Grain overlay keeps flat surfaces from looking digital */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Blueprint grid */
+.blueprint {
+  background-image:
+    linear-gradient(var(--grid-c, rgb(23 71 184 / 0.09)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-c, rgb(23 71 184 / 0.09)) 1px, transparent 1px),
+    linear-gradient(var(--grid-c2, rgb(23 71 184 / 0.045)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-c2, rgb(23 71 184 / 0.045)) 1px, transparent 1px);
+  background-size:
+    96px 96px,
+    96px 96px,
+    24px 24px,
+    24px 24px;
+}
+.blueprint-dark {
+  --grid-c: rgb(255 255 255 / 0.07);
+  --grid-c2: rgb(255 255 255 / 0.03);
+}
+
+/* Hazard tape */
+.hazard {
+  background: repeating-linear-gradient(-45deg, var(--color-yellow) 0 22px, var(--color-ink) 22px 44px);
+}
+
+/* Dimension line: ├──── label ────┤ */
+.dim {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.dim::before,
+.dim::after {
+  content: "";
+  flex: 1;
+  height: 9px;
+  border-inline: 1px solid currentColor;
+  background: linear-gradient(currentColor, currentColor) center / 100% 1px no-repeat;
+  opacity: 0.45;
+}
+
+/* ---------- Liquid glass ----------
+   Layer 1  .lg               tint + inner rim light + soft shadow
+   Layer 2  .lg::before       backdrop: blur + saturate
+   Layer 3  .lg::after        specular highlight that follows the pointer (--mx/--my set by JS)
+*/
+.lg {
+  --lg-tint: rgb(255 255 255 / 0.12);
+  --lg-rim: rgb(255 255 255 / 0.55);
+  --lg-radius: 999px;
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--lg-radius);
+  background: var(--lg-tint);
+  box-shadow:
+    inset 0 1px 0.5px var(--lg-rim),
+    inset 0 -1px 1px rgb(255 255 255 / 0.12),
+    inset 0 0 0 1px rgb(255 255 255 / 0.16),
+    inset 0 -10px 24px -14px rgb(255 255 255 / 0.35),
+    0 12px 32px -12px rgb(10 14 30 / 0.35),
+    0 2px 6px -2px rgb(10 14 30 / 0.18);
+}
+.lg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  backdrop-filter: blur(14px) saturate(180%) brightness(1.06);
+  -webkit-backdrop-filter: blur(14px) saturate(180%) brightness(1.06);
+}
+/* SVG-displacement refraction was removed: it re-ran per frame on every glass element (fixed header included)
+   and was the main cause of janky scrolling and slow page switches in Chromium. */
+.lg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    120px circle at var(--mx, 30%) var(--my, 0%),
+    rgb(255 255 255 / 0.38),
+    transparent 60%
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0.9;
+  transition: opacity 0.4s;
+}
+.lg-dark {
+  --lg-tint: rgb(14 18 28 / 0.38);
+  --lg-rim: rgb(255 255 255 / 0.3);
+  color: white;
+}
+.lg-light {
+  --lg-tint: rgb(255 255 255 / 0.55);
+  --lg-rim: rgb(255 255 255 / 0.95);
+}
+.lg-card {
+  --lg-radius: 22px;
+}
+
+/* Header glass that forms on scroll */
+.lg-morph {
+  transition:
+    background-color 0.6s var(--ease-out-expo),
+    box-shadow 0.6s var(--ease-out-expo),
+    padding 0.6s var(--ease-out-expo);
+}
+.lg-morph::before,
+.lg-morph::after {
+  transition: opacity 0.6s var(--ease-out-expo);
+}
+.lg-off {
+  background-color: transparent;
+  box-shadow: none;
+}
+.lg-off::before,
+.lg-off::after {
+  opacity: 0;
+}
+
+/* Glass button press feel */
+.lg-btn {
+  transition:
+    transform 0.5s var(--ease-out-expo),
+    box-shadow 0.5s var(--ease-out-expo);
+}
+.lg-btn:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+.lg-btn:active {
+  transform: scale(0.97);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .lg {
+    --lg-tint: rgb(255 255 255 / 0.85);
+  }
+  .lg-dark {
+    --lg-tint: rgb(14 18 28 / 0.85);
+  }
+}
+
+}
+
+/* ---------- Motion safety ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+}
+
+/* SplitText line masks: leave room for accents (Â, É) and descenders */
+.split-line-mask {
+  padding-block: 0.14em;
+  margin-block: -0.14em;
+}
+
+/* ---------- Opening animation ---------- */
+#intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+.intro-skip #intro {
+  display: none;
+}
+html.intro-running {
+  overflow: hidden;
+}
+.intro-caret {
+  animation: caret 0.8s steps(1) infinite;
+}
+@keyframes caret {
+  50% {
+    opacity: 0;
+  }
+}
